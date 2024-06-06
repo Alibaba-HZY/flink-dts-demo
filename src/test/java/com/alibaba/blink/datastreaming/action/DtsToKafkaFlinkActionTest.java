@@ -16,10 +16,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.internals.KeyedSerializationSchemaWrapper;
 import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkKafkaPartitioner;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 public class DtsToKafkaFlinkActionTest {
 
@@ -39,7 +36,7 @@ public class DtsToKafkaFlinkActionTest {
                 System.out.println(sinkTableName);
                 Assert.equals("test_drds_hzy_pyii.sample_order_real_aeje", sinkTableName);
 
-
+                HashMap<String, String> extraColumns = this.extraColumnConfig;
                 StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
                 env.enableCheckpointing(10000);
 
@@ -76,19 +73,19 @@ public class DtsToKafkaFlinkActionTest {
 //                            }
 //                        });
 
-                DataStream<String> input = env.fromCollection(Collections.singleton(dtsRecord.toString()));
-                input.map(dtsRecord -> {
-                    if (dtsRecord != null) {
-                        return JSON.toJSONString(CanalJsonUtils.convert(JSON.parseObject(dtsRecord), routeDefs));
-                    }
-                    return null;
-                }).filter((FilterFunction<String>) record -> {
-                    if (record == null || record.isEmpty()) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                });
+                DataStream<String> input = env.fromCollection(Collections.singleton(dtsRecord.toString()))
+                        .map(dtsRecord -> {
+                            if (dtsRecord != null) {
+                                return JSON.toJSONString(CanalJsonUtils.convert(JSONObject.parseObject(dtsRecord), routeDefs, extraColumns));
+                            }
+                            return null;
+                        }).filter((FilterFunction<String>) record -> {
+                            if (record == null || record.isEmpty()) {
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        });
 
                 Properties sinkProperties = new Properties();
                 String kafkaBootstrapServers = this.sinkConfig.get("url");
