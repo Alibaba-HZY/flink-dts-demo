@@ -70,6 +70,16 @@ public class CanalJson {
      */
     private String tableChanges;
 
+    private Map<String, Map<String, String>> tags;
+
+    public Map<String, Map<String, String>> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, Map<String, String>> tags) {
+        this.tags = tags;
+    }
+
     public String getType() {
         return type;
     }
